@@ -1,0 +1,30 @@
+version: 2
+orbs:
+  golangci-lint: neilisaac/golangci-lint@0.0.1
+jobs:
+  run-tests:
+    docker:
+      - image: golang:latest
+
+    working_directory: /cloudflare-ddns
+    steps:
+      - checkout
+      - run:
+          name: Run unit tests
+          command: go test -v -race ./...
+  lint:
+    docker:
+      - image: golang:latest
+    working_directory: /cloudflare-ddns
+    steps:
+      - checkout
+      - run:
+          name: Run golangci-lint
+          command: lint
+
+workflows:
+  version: 2
+  test-workflow:
+    jobs:
+      - lint
+      - run-tests
