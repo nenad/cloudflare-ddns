@@ -63,7 +63,7 @@ func TestRetry_RoundTripFailsAfterAttemptsExhausted(t *testing.T) {
 			serverFails: 2,
 			attempts:    3,
 			shouldError: false,
-			statusCode: 200,
+			statusCode:  200,
 		},
 	}
 

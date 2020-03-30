@@ -1,0 +1,52 @@
+{
+    "result": [
+        {
+            "id": "6e04a018b79b9302244a56d",
+            "type": "AAAA",
+            "name": "home.nenad.dev",
+            "content": "2a03:8103:98c1:7b0b:188c:243f:c6fc:86d2",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "locked": false,
+            "zone_id": "0c374e0067f0c409",
+            "zone_name": "nenad.dev",
+            "modified_on": "2020-03-29T14:32:06.559402Z",
+            "created_on": "2020-03-29T14:32:06.559402Z",
+            "meta": {
+                "auto_added": false,
+                "managed_by_apps": false,
+                "managed_by_argo_tunnel": false
+            }
+        },
+        {
+            "id": "1e04a018b79b9302244a56d",
+            "type": "A",
+            "name": "home.nenad.dev",
+            "content": "192.168.0.1",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "locked": false,
+            "zone_id": "0c374e0067f0c409",
+            "zone_name": "nenad.dev",
+            "modified_on": "2020-03-29T14:32:06.559402Z",
+            "created_on": "2020-03-29T14:32:06.559402Z",
+            "meta": {
+                "auto_added": false,
+                "managed_by_apps": false,
+                "managed_by_argo_tunnel": false
+            }
+        }
+    ],
+    "result_info": {
+        "page": 1,
+        "per_page": 20,
+        "total_pages": 1,
+        "count": 2,
+        "total_count": 2
+    },
+    "success": true,
+    "errors": [],
+    "messages": []
+}
