@@ -118,7 +118,7 @@ func (a *API) UpdateRecord(ctx context.Context, id string, request DNSUpdateRequ
 		return fmt.Errorf("error getting zone information: %w", err)
 	}
 
-	return a.send(ctx, "PUT", api("/zones/%s/dns_records/%s", zone, id), &request, nil)
+	return a.send(ctx, "PUT", api("/zones/%s/dns_records/%s", zone, id), &request, &Response{})
 }
 
 func (a *API) getZone(ctx context.Context, domain string) (string, error) {
