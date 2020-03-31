@@ -2,7 +2,7 @@ package ip
 
 import (
 	"context"
-	"ddns-cloudflare/pkg/resilience"
+	"cloudflare-ddns/pkg/resilience"
 	"fmt"
 	"io/ioutil"
 	"net/http"

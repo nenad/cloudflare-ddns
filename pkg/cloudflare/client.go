@@ -3,7 +3,7 @@ package cloudflare
 import (
 	"bytes"
 	"context"
-	"ddns-cloudflare/pkg/resilience"
+	"cloudflare-ddns/pkg/resilience"
 	"encoding/json"
 	"fmt"
 	"io"
