@@ -37,6 +37,25 @@
                 "managed_by_apps": false,
                 "managed_by_argo_tunnel": false
             }
+        },
+        {
+            "id": "a3bfb90b2b9d",
+            "type": "A",
+            "name": "nenad.dev",
+            "content": "192.168.0.2",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "locked": false,
+            "zone_id": "0c374e0067f0c409",
+            "zone_name": "nenad.dev",
+            "modified_on": "2020-03-29T14:32:06.559402Z",
+            "created_on": "2020-03-29T14:32:06.559402Z",
+            "meta": {
+                "auto_added": false,
+                "managed_by_apps": false,
+                "managed_by_argo_tunnel": false
+            }
         }
     ],
     "result_info": {

@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -20,7 +21,6 @@ const (
 // API is an HTTP client that can invoke CloudFlare's API functions.
 type API struct {
 	client *http.Client
-	zone   string
 	token  string
 }
 
@@ -50,10 +50,7 @@ func Timeout(duration time.Duration) func(*API) {
 }
 
 // NewClient returns an HTTP client that can invoke CloudFlare's API
-func NewClient(zone, token string, options ...func(*API)) (*API, error) {
-	if zone == "" {
-		return nil, fmt.Errorf("zone is empty")
-	}
+func NewClient(token string, options ...func(*API)) (*API, error) {
 	if token == "" {
 		return nil, fmt.Errorf("token is empty")
 	}
@@ -63,7 +60,6 @@ func NewClient(zone, token string, options ...func(*API)) (*API, error) {
 			Timeout:   time.Second * 10,
 			Transport: http.DefaultTransport,
 		},
-		zone:  zone,
 		token: token,
 	}
 	for _, o := range options {
@@ -77,10 +73,14 @@ func NewClient(zone, token string, options ...func(*API)) (*API, error) {
 // Returns an error if there are either no records or duplicate records found.
 func (a *API) GetRecord(ctx context.Context, name string, recordType Type) (rec Record, err error) {
 	page := 1
+	zone, err := a.getZone(ctx, name)
+	if err != nil {
+		return rec, fmt.Errorf("error getting zone information: %w", err)
+	}
 
 	for {
 		dnsResp := DNSResponse{}
-		err := a.send(ctx, "GET", api("/zones/%s/dns_records?page=%d&per_page=%d", a.zone, page, perPage), nil, &dnsResp)
+		err := a.send(ctx, "GET", api("/zones/%s/dns_records?page=%d&per_page=%d", zone, page, perPage), nil, &dnsResp)
 		if err != nil {
 			return rec, err
 		}
@@ -113,7 +113,28 @@ func (a *API) UpdateRecord(ctx context.Context, id string, request DNSUpdateRequ
 		request.TTL = 1
 	}
 
-	return a.send(ctx, "PUT", api("/zones/%s/dns_records/%s", a.zone, id), &request, nil)
+	zone, err := a.getZone(ctx, request.Name)
+	if err != nil {
+		return fmt.Errorf("error getting zone information: %w", err)
+	}
+
+	return a.send(ctx, "PUT", api("/zones/%s/dns_records/%s", zone, id), &request, nil)
+}
+
+func (a *API) getZone(ctx context.Context, domain string) (string, error) {
+	resp := &DNSResponse{}
+	parts := strings.Split(domain, ".")
+	zoneDomain := strings.Join(parts[len(parts)-2:], ".")
+	err := a.send(ctx, "GET", api("/zones?name=%s", zoneDomain), nil, resp)
+	if err != nil {
+		return "", fmt.Errorf("could not get zone list: %w", err)
+	}
+
+	if len(*resp.Result) > 0 {
+		rec := *resp.Result
+		return rec[0].ID, nil
+	}
+	return "", fmt.Errorf("could not find zone that matches domain %q", domain)
 }
 
 func (a *API) send(ctx context.Context, method, url string, send, recv interface{}) error {
