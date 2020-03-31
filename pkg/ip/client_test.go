@@ -2,7 +2,7 @@ package ip_test
 
 import (
 	"context"
-	"ddns-cloudflare/pkg/ip"
+	"cloudflare-ddns/pkg/ip"
 	"io"
 	"net/http"
 	"testing"
