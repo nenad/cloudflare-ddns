@@ -1,0 +1,56 @@
+{
+    "result": [
+        {
+            "id": "zone12345",
+            "name": "nenad.dev",
+            "status": "active",
+            "paused": false,
+            "type": "full",
+            "development_mode": 0,
+            "name_servers": [
+                "kim.ns.cloudflare.com",
+                "nile.ns.cloudflare.com"
+            ],
+            "original_name_servers": [
+                "ns-10-c.gandi.net",
+                "ns-104-b.gandi.net",
+                "ns-209-a.gandi.net"
+            ],
+            "original_registrar": null,
+            "original_dnshost": null,
+            "modified_on": "2020-03-29T14:32:06.559402Z",
+            "created_on": "2019-03-01T09:27:43.516797Z",
+            "activated_on": "2019-03-01T09:42:13.774981Z",
+            "meta": {
+                "step": 3,
+                "wildcard_proxiable": false,
+                "custom_certificate_quota": 0,
+                "page_rule_quota": 3,
+                "phishing_detected": false,
+                "multiple_railguns_allowed": false
+            },
+            "plan": {
+                "id": "0feeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                "name": "Free Website",
+                "price": 0,
+                "currency": "USD",
+                "frequency": "",
+                "is_subscribed": true,
+                "can_subscribe": false,
+                "legacy_id": "free",
+                "legacy_discount": false,
+                "externally_managed": false
+            }
+        }
+    ],
+    "result_info": {
+        "page": 1,
+        "per_page": 20,
+        "total_pages": 1,
+        "count": 1,
+        "total_count": 1
+    },
+    "success": true,
+    "errors": [],
+    "messages": []
+}
