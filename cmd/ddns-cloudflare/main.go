@@ -1,9 +1,9 @@
 package main
 
 import (
-	"context"
 	"cloudflare-ddns/pkg/cloudflare"
 	"cloudflare-ddns/pkg/ip"
+	"context"
 	"fmt"
 	"os"
 	"strconv"

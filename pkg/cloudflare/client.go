@@ -2,8 +2,8 @@ package cloudflare
 
 import (
 	"bytes"
-	"context"
 	"cloudflare-ddns/pkg/resilience"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
