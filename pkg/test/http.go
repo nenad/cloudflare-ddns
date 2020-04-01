@@ -6,14 +6,17 @@ import (
 )
 
 type (
+	// Body is in-memory structure that implements io.ReadCloser.
 	Body struct {
 		offset      int
 		contentSize int
 		content     []byte
 	}
-	testTransport func(r *http.Request) *http.Response
+	// Transport allows simulating request-response in any http.Client.
+	Transport func(r *http.Request) *http.Response
 )
 
+// Creates a Body from given input.
 func FromBytes(input []byte) *Body {
 	b := &Body{
 		offset:      0,
@@ -24,6 +27,7 @@ func FromBytes(input []byte) *Body {
 	return b
 }
 
+// Reads bytes in p.
 func (b *Body) Read(p []byte) (n int, err error) {
 	n = copy(p, b.content[b.offset:])
 	b.offset += n
@@ -34,6 +38,7 @@ func (b *Body) Read(p []byte) (n int, err error) {
 	return n, nil
 }
 
+// Closes the body.
 func (b *Body) Close() error {
 	b.offset = 0
 	b.content = nil
@@ -41,11 +46,13 @@ func (b *Body) Close() error {
 	return nil
 }
 
-func (t testTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+// RoundTrip implements RoundTripper.
+func (t Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 	return t(r), nil
 }
 
-func NewTestClient(transport testTransport) *http.Client {
+// NewTestClient returns a http.Client that has test transport injected.
+func NewTestClient(transport Transport) *http.Client {
 	return &http.Client{
 		Transport: transport,
 	}

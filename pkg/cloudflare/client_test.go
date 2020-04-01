@@ -1,9 +1,9 @@
 package cloudflare_test
 
 import (
-	"context"
 	"cloudflare-ddns/pkg/cloudflare"
 	"cloudflare-ddns/pkg/test"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"

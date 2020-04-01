@@ -1,8 +1,8 @@
 package ip
 
 import (
-	"context"
 	"cloudflare-ddns/pkg/resilience"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -70,7 +70,12 @@ func (c *API) Get(ctx context.Context, version Version) (ip string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("could not get response: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		cErr := resp.Body.Close()
+		if err == nil {
+			err = cErr
+		}
+	}()
 
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("could not get process response, got %d status code", resp.StatusCode)

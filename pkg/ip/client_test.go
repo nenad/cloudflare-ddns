@@ -1,35 +1,12 @@
 package ip_test
 
 import (
-	"context"
 	"cloudflare-ddns/pkg/ip"
-	"io"
+	"cloudflare-ddns/pkg/test"
+	"context"
 	"net/http"
 	"testing"
 )
-
-type (
-	body          string
-	testTransport func(r *http.Request) *http.Response
-)
-
-func (b *body) Read(p []byte) (n int, err error) {
-	return copy(p, *b), io.EOF
-}
-
-func (b *body) Close() error {
-	return nil
-}
-
-func (t testTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	return t(r), nil
-}
-
-func newTestClient(transport testTransport) *http.Client {
-	return &http.Client{
-		Transport: transport,
-	}
-}
 
 func Test_VersionsGet(t *testing.T) {
 	tests := []struct {
@@ -80,11 +57,10 @@ func Test_VersionsGet(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			client := ip.NewClient(ip.Client(newTestClient(func(r *http.Request) *http.Response {
+			client := ip.NewClient(ip.Client(test.NewTestClient(func(r *http.Request) *http.Response {
 				if r.URL.String() != tt.wantURL {
 					t.Errorf("wrong URL, want %q, got %q", tt.wantURL, r.URL.String())
 				}
-				var want = body(tt.want)
 				code := 200
 				if tt.hasError {
 					code = 500
@@ -92,7 +68,7 @@ func Test_VersionsGet(t *testing.T) {
 				return &http.Response{
 					StatusCode: code,
 					Header:     map[string][]string{"Content-Type": {"text/plain"}},
-					Body:       &want,
+					Body:       test.FromBytes([]byte(tt.want)),
 				}
 			})))
 
