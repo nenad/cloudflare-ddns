@@ -2,6 +2,15 @@ version: 2.1
 orbs:
   golangci-lint: timakin/golangci-lint@0.1.1
 jobs:
+  build:
+    docker:
+      - image: golang:latest
+    working_directory: /cloudflare-ddns
+    steps:
+      - checkout
+      - run: GOOS=linux GOARCH=amd64 make build
+      - run: tar --gzip --create -f cloudflare-ddsn-linux-x86.tar.gz cloudflare-ddns
+
   run-tests:
     docker:
       - image: golang:latest
@@ -17,3 +26,7 @@ workflows:
     jobs:
       - run-tests
       - golangci-lint/lint
+      - build:
+          filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
