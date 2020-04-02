@@ -5,6 +5,9 @@
 *.so
 *.dylib
 
+# Program binary
+cloudflare-ddns
+
 # Test binary, built with `go test -c`
 *.test
 
