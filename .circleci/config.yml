@@ -9,7 +9,9 @@ jobs:
     steps:
       - checkout
       - run: GOOS=linux GOARCH=amd64 make build
-      - run: tar --gzip --create -f cloudflare-ddsn-linux-x86.tar.gz cloudflare-ddns
+      - run: tar --gzip --create -f cloudflare-ddns-linux-x86.tar.gz cloudflare-ddns
+      - store_artifacts:
+          path: /cloudflare-ddns/cloudflare-ddns-linux-x86.tar.gz
 
   run-tests:
     docker:
