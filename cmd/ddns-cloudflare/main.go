@@ -9,7 +9,17 @@ import (
 	"os"
 )
 
+var (
+	Version = "dev"
+	Build   = "unknown"
+)
+
 func main() {
+	if len(os.Args) >= 2 && os.Args[1] == "version" {
+		fmt.Println(Version + "-" + Build)
+		os.Exit(0)
+	}
+
 	cfg, err := config.Parse(os.Args[1:])
 	if err != nil {
 		fail(err)
