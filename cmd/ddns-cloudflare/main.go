@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.FromEnvironment()
+	cfg, err := config.Parse(os.Args[1:])
 	if err != nil {
 		fail(err)
 	}
