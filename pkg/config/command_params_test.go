@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -11,16 +10,16 @@ import (
 func TestFromEnvironment(t *testing.T) {
 	tests := []struct {
 		name        string
-		env         map[string]string
+		args        []string
 		want        CloudFlare
 		errKeywords []string
 	}{
 		{
 			name: "minimal configuration should not throw an error and have expected defaults",
-			env: map[string]string{
-				"DOMAIN": "nenad.dev",
-				"TOKEN":  "token",
-				"TYPE":   "A",
+			args: []string{
+				"-domain", "nenad.dev",
+				"-token", "token",
+				"-type", "A",
 			},
 			want: CloudFlare{
 				Domain:  "nenad.dev",
@@ -33,49 +32,44 @@ func TestFromEnvironment(t *testing.T) {
 		},
 		{
 			name: "full configuration should not throw an error",
-			env: map[string]string{
-				"DOMAIN":  "nenad.dev",
-				"TOKEN":   "token",
-				"TYPE":    "AAAA",
-				"TIMEOUT": "200",
-				"PROXIED": "false",
-				"TTL":     "300",
+			args: []string{
+				"-domain", "nenad.dev",
+				"-token", "token",
+				"-type", "AAAA",
+				"-timeout", "200",
+				"-proxied",
+				"-ttl", "300",
 			},
 			want: CloudFlare{
 				Domain:  "nenad.dev",
 				Token:   "token",
 				Type:    "AAAA",
 				Timeout: time.Second * time.Duration(200),
-				Proxied: false,
+				Proxied: true,
 				TTL:     300,
 			},
 		},
 		{
 			name: "type is only A or AAAA",
-			env: map[string]string{
-				"DOMAIN": "nenad.dev",
-				"TOKEN":  "token",
-				"TYPE":   "B",
+			args: []string{
+				"-domain", "nenad.dev",
+				"-token", "token",
+				"-type", "B",
 			},
 			want:        CloudFlare{},
-			errKeywords: []string{"TYPE", "AAAA"},
+			errKeywords: []string{"-type", "AAAA"},
 		},
 		{
-			name:        "empty environment should fail for DOMAIN, TOKEN and TYPE",
-			env:         map[string]string{},
+			name:        "empty command line should fail for domain and token",
+			args:        []string{},
 			want:        CloudFlare{},
-			errKeywords: []string{"DOMAIN", "TOKEN", "TYPE"},
+			errKeywords: []string{"-domain", "-token"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Clearenv()
-			for k, v := range tt.env {
-				_ = os.Setenv(k, v)
-			}
-
-			got, err := FromEnvironment()
+			got, err := Parse(tt.args)
 
 			if err != nil && len(tt.errKeywords) == 0 {
 				t.Fatalf("got error when none was expected: %s", err)
