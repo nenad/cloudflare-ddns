@@ -3,7 +3,7 @@ package main
 import (
 	"cloudflare-ddns/pkg/cloudflare"
 	"cloudflare-ddns/pkg/config"
-	"cloudflare-ddns/pkg/ip"
+	"cloudflare-ddns/pkg/resolver/external"
 	"context"
 	"fmt"
 	"os"
@@ -17,9 +17,9 @@ func main() {
 
 	// TODO Abstract IP version in a separate package
 	// TODO Make ipify URL customizable
-	ipifyVersion := ip.V4
-	if cfg.Type == "AAAA" {
-		ipifyVersion = ip.V6
+	ipifyVersion := external.V4
+	if cfg.CloudFlare.Type == "AAAA" {
+		ipifyVersion = external.V6
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -35,7 +35,7 @@ func main() {
 		fail(err)
 	}
 
-	myIP, err := (ip.NewClient(ip.Retry(3))).Get(ctx, ipifyVersion)
+	myIP, err := (external.NewClient(external.Retry(3))).Get(ctx, ipifyVersion)
 	if err != nil {
 		fail(err)
 	}
