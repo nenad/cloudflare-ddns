@@ -25,12 +25,12 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cf, err := cloudflare.NewClient(cfg.Token, cloudflare.Timeout(cfg.Timeout), cloudflare.Retry(3))
+	cf, err := cloudflare.NewClient(cfg.CloudFlare.Token, cloudflare.Timeout(cfg.CloudFlare.Timeout), cloudflare.Retry(3))
 	if err != nil {
 		fail(err)
 	}
 
-	rec, err := cf.GetRecord(ctx, cfg.Domain, cloudflare.Type(cfg.Type))
+	rec, err := cf.GetRecord(ctx, cfg.CloudFlare.Domain, cloudflare.Type(cfg.CloudFlare.Type))
 	if err != nil {
 		fail(err)
 	}
@@ -45,12 +45,12 @@ func main() {
 			Name:    rec.Name,
 			Type:    rec.Type,
 			Content: myIP,
-			Proxied: cfg.Proxied,
+			Proxied: cfg.CloudFlare.Proxied,
 		})
 		if err != nil {
 			fail("could not update record, got " + err.Error())
 		}
-		fmt.Printf("Updated %q to point from %s to %s\n", cfg.Domain, rec.Content, myIP)
+		fmt.Printf("Updated %q to point from %s to %s\n", cfg.CloudFlare.Domain, rec.Content, myIP)
 	} else {
 		fmt.Println("No updates")
 	}
