@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 )
 
 func main() {
@@ -19,7 +20,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cf, err := cloudflare.NewClient(cfg.CloudFlare.Token, cloudflare.Timeout(cfg.CloudFlare.Timeout), cloudflare.Retry(3))
+	cacheFile, err := os.UserHomeDir()
+	if err != nil {
+		fail(err)
+	}
+	cacheFile = fmt.Sprintf("%s/.cloudflare-ddns.json", cacheFile)
+
+	cf, err := cloudflare.NewClient(cfg.CloudFlare.Token, cloudflare.Timeout(cfg.CloudFlare.Timeout), cloudflare.Retry(3), cloudflare.Cache(time.Hour, cacheFile))
 	if err != nil {
 		fail(err)
 	}

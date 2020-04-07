@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -18,10 +20,23 @@ const (
 	perPage = 50
 )
 
+type cachedRecord struct {
+	Record    Record    `json:"record"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+func (c *cachedRecord) isExpired() bool {
+	return c.ExpiresAt.Before(time.Now())
+}
+
 // API is an HTTP client that can invoke CloudFlare's API functions.
 type API struct {
 	client *http.Client
 	token  string
+
+	cacheEnabled bool
+	cacheTTL     time.Duration
+	cacheFile    string
 }
 
 // Retry sets the attempt number when making API calls to CloudFlare.
@@ -49,6 +64,14 @@ func Timeout(duration time.Duration) func(*API) {
 	}
 }
 
+func Cache(ttl time.Duration, file string) func(*API) {
+	return func(a *API) {
+		a.cacheEnabled = true
+		a.cacheTTL = ttl
+		a.cacheFile = file
+	}
+}
+
 // NewClient returns an HTTP client that can invoke CloudFlare's API
 func NewClient(token string, options ...func(*API)) (*API, error) {
 	if token == "" {
@@ -72,6 +95,13 @@ func NewClient(token string, options ...func(*API)) (*API, error) {
 // GetRecord will return the DNS record matching the given record and type.
 // Returns an error if there are either no records or duplicate records found.
 func (a *API) GetRecord(ctx context.Context, name string, recordType Type) (rec Record, err error) {
+	if a.cacheEnabled {
+		cached := a.loadCache()
+		if !cached.isExpired() {
+			return cached.Record, nil
+		}
+	}
+
 	page := 1
 	zone, err := a.getZone(ctx, name)
 	if err != nil {
@@ -100,6 +130,9 @@ func (a *API) GetRecord(ctx context.Context, name string, recordType Type) (rec 
 				return rec, fmt.Errorf("no record for %q of type %s found", name, recordType)
 			}
 
+			if a.cacheEnabled {
+				a.saveCache(rec)
+			}
 			return rec, err
 		}
 		page++
@@ -219,4 +252,38 @@ func checkError(resp interface{}) error {
 	}
 
 	return fmt.Errorf("error in the response%s", err)
+}
+
+func (a *API) loadCache() (rec cachedRecord) {
+	bs, err := ioutil.ReadFile(a.cacheFile)
+	if err != nil {
+		return rec
+	}
+
+	err = json.Unmarshal(bs, &rec)
+	if err != nil {
+		return rec
+	}
+
+	return rec
+}
+
+func (a *API) saveCache(rec Record) {
+	crec := cachedRecord{
+		Record:    rec,
+		ExpiresAt: time.Now().Add(a.cacheTTL),
+	}
+
+	bs, err := json.Marshal(crec)
+	if err != nil {
+		return
+	}
+
+	file, err := os.Create(a.cacheFile)
+	if err != nil {
+		return
+	}
+
+	_, _ = file.Write(bs)
+	_ = file.Close()
 }
