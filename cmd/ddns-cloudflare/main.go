@@ -3,6 +3,7 @@ package main
 import (
 	"cloudflare-ddns/pkg/cloudflare"
 	"cloudflare-ddns/pkg/config"
+	"cloudflare-ddns/pkg/resolver/device"
 	"cloudflare-ddns/pkg/resolver/external"
 	"context"
 	"fmt"
@@ -13,13 +14,6 @@ func main() {
 	cfg, err := config.Parse(os.Args[1:])
 	if err != nil {
 		fail(err)
-	}
-
-	// TODO Abstract IP version in a separate package
-	// TODO Make ipify URL customizable
-	ipifyVersion := external.V4
-	if cfg.CloudFlare.Type == "AAAA" {
-		ipifyVersion = external.V6
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -35,9 +29,28 @@ func main() {
 		fail(err)
 	}
 
-	myIP, err := (external.NewClient(external.Retry(3))).Get(ctx, ipifyVersion)
-	if err != nil {
-		fail(err)
+	myIP := ""
+	if cfg.App.Interface != "" {
+		ver := "ip4"
+		if cfg.CloudFlare.Type == "AAAA" {
+			ver = "ip6"
+		}
+		myIP, err = device.GetAddress(cfg.App.Interface, ver)
+		if err != nil {
+			fail(err)
+		}
+		fmt.Println("From interface " + myIP)
+	} else {
+		// TODO Abstract IP version in a separate package
+		// TODO Make ipify URL customizable
+		ipifyVersion := external.V4
+		if cfg.CloudFlare.Type == "AAAA" {
+			ipifyVersion = external.V6
+		}
+		myIP, err = (external.NewClient(external.Retry(3))).Get(ctx, ipifyVersion)
+		if err != nil {
+			fail(err)
+		}
 	}
 
 	if myIP != rec.Content {
