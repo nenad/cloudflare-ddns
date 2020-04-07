@@ -11,7 +11,7 @@ func TestFromEnvironment(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        []string
-		want        CloudFlare
+		want        Configuration
 		errKeywords []string
 	}{
 		{
@@ -21,13 +21,15 @@ func TestFromEnvironment(t *testing.T) {
 				"-token", "token",
 				"-type", "A",
 			},
-			want: CloudFlare{
-				Domain:  "nenad.dev",
-				Token:   "token",
-				Type:    "A",
-				Timeout: time.Second * time.Duration(10),
-				Proxied: true,
-				TTL:     1,
+			want: Configuration{
+				CloudFlare: CloudFlare{
+					Domain:  "nenad.dev",
+					Token:   "token",
+					Type:    "A",
+					Timeout: time.Second * time.Duration(10),
+					Proxied: true,
+					TTL:     1,
+				},
 			},
 		},
 		{
@@ -39,14 +41,20 @@ func TestFromEnvironment(t *testing.T) {
 				"-timeout", "200",
 				"-proxied",
 				"-ttl", "300",
+				"-interface", "wlp3s0",
 			},
-			want: CloudFlare{
-				Domain:  "nenad.dev",
-				Token:   "token",
-				Type:    "AAAA",
-				Timeout: time.Second * time.Duration(200),
-				Proxied: true,
-				TTL:     300,
+			want: Configuration{
+				CloudFlare: CloudFlare{
+					Domain:  "nenad.dev",
+					Token:   "token",
+					Type:    "AAAA",
+					Timeout: time.Second * time.Duration(200),
+					Proxied: true,
+					TTL:     300,
+				},
+				App: App{
+					Interface: "wlp3s0",
+				},
 			},
 		},
 		{
@@ -56,13 +64,13 @@ func TestFromEnvironment(t *testing.T) {
 				"-token", "token",
 				"-type", "B",
 			},
-			want:        CloudFlare{},
+			want:        Configuration{},
 			errKeywords: []string{"-type", "AAAA"},
 		},
 		{
 			name:        "empty command line should fail for domain and token",
 			args:        []string{},
-			want:        CloudFlare{},
+			want:        Configuration{},
 			errKeywords: []string{"-domain", "-token"},
 		},
 	}

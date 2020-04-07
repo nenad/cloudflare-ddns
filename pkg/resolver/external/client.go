@@ -1,4 +1,4 @@
-package ip
+package external
 
 import (
 	"cloudflare-ddns/pkg/resilience"
