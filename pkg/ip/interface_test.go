@@ -1,7 +1,7 @@
-package device_test
+package ip_test
 
 import (
-	"cloudflare-ddns/pkg/resolver/device"
+	"cloudflare-ddns/pkg/ip"
 	"net"
 	"strings"
 	"testing"
@@ -12,26 +12,26 @@ import (
 func TestGetAddress(t *testing.T) {
 	tests := []struct {
 		name      string
-		version   string
+		version   ip.Version
 		flags     net.Flags
 		isUnicast bool
 		err       string
 	}{
 		{
 			name:      "ipv6 interface up will return unicast address",
-			version:   "ip6",
+			version:   ip.V6,
 			flags:     net.FlagUp,
 			isUnicast: true,
 		},
 		{
 			name:      "ipv4 interface up will return unicast address",
-			version:   "ip4",
+			version:   ip.V4,
 			flags:     net.FlagMulticast,
 			isUnicast: true,
 		},
 		{
 			name:      "ip loopback interface up will return no addresses",
-			version:   "ip",
+			version:   ip.V4,
 			flags:     net.FlagUp | net.FlagLoopback,
 			isUnicast: false,
 			err:       "could not find global unicast address for interface",
@@ -48,12 +48,14 @@ func TestGetAddress(t *testing.T) {
 				t.Skip("skipping test, IPv6 is not supported")
 			}
 
-			iface, err := nettest.RoutedInterface(tt.version, tt.flags)
+			iface, err := nettest.RoutedInterface(string(tt.version), tt.flags)
 			if err != nil {
 				t.Fatalf("could not create interface: %s", err)
 			}
 
-			ip, err := device.GetAddress(iface.Name, tt.version)
+			retriever := ip.InterfaceRetriever{Device: iface.Name}
+
+			ipAddr, err := retriever.Get(tt.version)
 			if err != nil {
 				if tt.err != "" {
 					if !strings.Contains(err.Error(), tt.err) {
@@ -64,7 +66,7 @@ func TestGetAddress(t *testing.T) {
 				}
 			}
 
-			addr := net.ParseIP(ip)
+			addr := net.ParseIP(ipAddr)
 			if addr.IsGlobalUnicast() != tt.isUnicast {
 				t.Fatalf("device %q: expected unicast %t, got %t", iface.Name, tt.isUnicast, addr.IsGlobalUnicast())
 			}
