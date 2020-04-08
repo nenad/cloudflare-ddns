@@ -73,10 +73,10 @@ func TestFromEnvironment(t *testing.T) {
 			errKeywords: []string{"-type", "AAAA"},
 		},
 		{
-			name:        "empty command line should fail for domain and token",
+			name:        "empty command line should fail with no arguments provided",
 			args:        []string{},
 			want:        Configuration{},
-			errKeywords: []string{"-domain", "-token"},
+			errKeywords: []string{"no arguments provided"},
 		},
 	}
 

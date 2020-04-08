@@ -59,6 +59,11 @@ func Parse(args []string) (Configuration, error) {
 	fs.BoolVar(&proxied, "proxied", true, "Is the request proxied through CloudFlare's servers")
 	fs.BoolVar(&cache, "cache", false, "Should the CloudFlare result be cached on disk")
 
+	if len(args) == 0 {
+		fs.Usage()
+		return Configuration{}, fmt.Errorf("no arguments provided")
+	}
+
 	if err := fs.Parse(args); err != nil {
 		return Configuration{}, fmt.Errorf("could not parse command parameters: %w", err)
 	}
