@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cloudflare-ddns/pkg/ip"
 	"flag"
 	"fmt"
 	"os"
@@ -11,12 +12,13 @@ import (
 type (
 	// CloudFlare domain settings
 	CloudFlare struct {
-		Domain  string
-		Token   string
-		Type    string
-		Timeout time.Duration
-		Proxied bool
-		TTL     int
+		Domain    string
+		Token     string
+		Type      string
+		Timeout   time.Duration
+		Proxied   bool
+		TTL       int
+		IPVersion ip.Version
 	}
 
 	// App configuration
@@ -71,6 +73,11 @@ func Parse(args []string) (Configuration, error) {
 		errs = append(errs, "-type must be 'A' for IPv4 or 'AAAA' for IPv6")
 	}
 
+	ipVer := ip.V4
+	if recordType == "AAAA" {
+		ipVer = ip.V6
+	}
+
 	if timeout <= 0 {
 		timeout = 10
 	}
@@ -88,11 +95,12 @@ func Parse(args []string) (Configuration, error) {
 			Interface: iface,
 		},
 		CloudFlare: CloudFlare{
-			Domain:  domain,
-			Token:   token,
-			Type:    recordType,
-			Timeout: time.Second * time.Duration(timeout),
-			Proxied: proxied,
-			TTL:     ttl,
+			Domain:    domain,
+			Token:     token,
+			Type:      recordType,
+			Timeout:   time.Second * time.Duration(timeout),
+			Proxied:   proxied,
+			TTL:       ttl,
+			IPVersion: ipVer,
 		}}, nil
 }

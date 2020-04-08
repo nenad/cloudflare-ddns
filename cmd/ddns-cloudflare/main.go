@@ -3,73 +3,49 @@ package main
 import (
 	"cloudflare-ddns/pkg/cloudflare"
 	"cloudflare-ddns/pkg/config"
-	"cloudflare-ddns/pkg/resolver/device"
-	"cloudflare-ddns/pkg/resolver/external"
+	"cloudflare-ddns/pkg/ip"
 	"context"
 	"fmt"
+	"log"
 	"os"
 )
 
 func main() {
 	cfg, err := config.Parse(os.Args[1:])
 	if err != nil {
-		fail(err)
+		log.Fatalf("could not parse flags: %s", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cf, err := cloudflare.NewClient(cfg.CloudFlare.Token, cloudflare.Timeout(cfg.CloudFlare.Timeout), cloudflare.Retry(3))
+	resolver := ip.Factory(cfg.App.Interface)
+	myIP, err := resolver.Get(cfg.CloudFlare.IPVersion)
 	if err != nil {
-		fail(err)
+		log.Fatalf("could not get IP: %s", err)
+	}
+
+	cf, err := cloudflare.NewClient(
+		cfg.CloudFlare.Token,
+		cloudflare.Timeout(cfg.CloudFlare.Timeout),
+		cloudflare.Retry(3),
+	)
+	if err != nil {
+		log.Fatalf("could not initialize CloudFlare client: %s", err)
 	}
 
 	rec, err := cf.GetRecord(ctx, cfg.CloudFlare.Domain, cloudflare.Type(cfg.CloudFlare.Type))
 	if err != nil {
-		fail(err)
+		log.Fatalf("could not get CloudFlare record: %s", err)
+	}
+	if err := cf.UpdateRecord(ctx, rec.ID, cloudflare.DNSUpdateRequest{
+		Name:    rec.Name,
+		Type:    rec.Type,
+		Content: myIP,
+		Proxied: cfg.CloudFlare.Proxied,
+	}); err != nil {
+		log.Fatalf("could not update record: %s ", err)
 	}
 
-	myIP := ""
-	if cfg.App.Interface != "" {
-		ver := "ip4"
-		if cfg.CloudFlare.Type == "AAAA" {
-			ver = "ip6"
-		}
-		myIP, err = device.GetAddress(cfg.App.Interface, ver)
-		if err != nil {
-			fail(err)
-		}
-		fmt.Println("From interface " + myIP)
-	} else {
-		// TODO Abstract IP version in a separate package
-		// TODO Make ipify URL customizable
-		ipifyVersion := external.V4
-		if cfg.CloudFlare.Type == "AAAA" {
-			ipifyVersion = external.V6
-		}
-		myIP, err = (external.NewClient(external.Retry(3))).Get(ctx, ipifyVersion)
-		if err != nil {
-			fail(err)
-		}
-	}
-
-	if myIP != rec.Content {
-		err := cf.UpdateRecord(ctx, rec.ID, cloudflare.DNSUpdateRequest{
-			Name:    rec.Name,
-			Type:    rec.Type,
-			Content: myIP,
-			Proxied: cfg.CloudFlare.Proxied,
-		})
-		if err != nil {
-			fail("could not update record, got " + err.Error())
-		}
-		fmt.Printf("Updated %q to point from %s to %s\n", cfg.CloudFlare.Domain, rec.Content, myIP)
-	} else {
-		fmt.Println("No updates")
-	}
-}
-
-func fail(arg interface{}) {
-	fmt.Println(arg)
-	os.Exit(1)
+	fmt.Printf("Updated %q to point from %s to %s\n", cfg.CloudFlare.Domain, rec.Content, myIP)
 }

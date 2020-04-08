@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cloudflare-ddns/pkg/ip"
 	"reflect"
 	"strings"
 	"testing"
@@ -23,12 +24,13 @@ func TestFromEnvironment(t *testing.T) {
 			},
 			want: Configuration{
 				CloudFlare: CloudFlare{
-					Domain:  "nenad.dev",
-					Token:   "token",
-					Type:    "A",
-					Timeout: time.Second * time.Duration(10),
-					Proxied: true,
-					TTL:     1,
+					Domain:    "nenad.dev",
+					Token:     "token",
+					Type:      "A",
+					Timeout:   time.Second * time.Duration(10),
+					Proxied:   true,
+					TTL:       1,
+					IPVersion: ip.V4,
 				},
 			},
 		},
@@ -45,12 +47,13 @@ func TestFromEnvironment(t *testing.T) {
 			},
 			want: Configuration{
 				CloudFlare: CloudFlare{
-					Domain:  "nenad.dev",
-					Token:   "token",
-					Type:    "AAAA",
-					Timeout: time.Second * time.Duration(200),
-					Proxied: true,
-					TTL:     300,
+					Domain:    "nenad.dev",
+					Token:     "token",
+					Type:      "AAAA",
+					Timeout:   time.Second * time.Duration(200),
+					Proxied:   true,
+					TTL:       300,
+					IPVersion: ip.V6,
 				},
 				App: App{
 					Interface: "wlp3s0",

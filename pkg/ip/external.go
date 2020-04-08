@@ -1,23 +1,19 @@
-package external
+package ip
 
 import (
 	"cloudflare-ddns/pkg/resilience"
-	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 )
 
-const (
-	V4 Version = "https://api.ipify.org"
-	V6 Version = "https://api6.ipify.org"
-)
+var ipifyUrl = map[Version]string{
+	V4: "https://api.ipify.org",
+	V6: "https://api6.ipify.org",
+}
 
 type (
-	// Version of the IP.
-	Version string
-
 	// API is an HTTP client that can invoke ipify's API.
 	API struct {
 		client *http.Client
@@ -59,13 +55,12 @@ func NewClient(options ...func(*API)) *API {
 }
 
 // Get returns the queried IP version, or an error if there are issues getting it.
-func (c *API) Get(ctx context.Context, version Version) (ip string, err error) {
+func (c *API) Get(version Version) (ip string, err error) {
 	// TODO Verify the requested version and returned response
-	req, err := http.NewRequest("GET", string(version), nil)
+	req, err := http.NewRequest("GET", ipifyUrl[version], nil)
 	if err != nil {
 		return "", fmt.Errorf("could not construct request: %w", err)
 	}
-	req = req.WithContext(ctx)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not get response: %w", err)
