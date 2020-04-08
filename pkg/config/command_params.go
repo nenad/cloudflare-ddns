@@ -23,7 +23,8 @@ type (
 
 	// App configuration
 	App struct {
-		Interface string // Interface which will be used to retrieve IP from.
+		Interface    string // Interface which will be used to retrieve IP from.
+		CacheEnabled bool
 	}
 
 	Configuration struct {
@@ -42,6 +43,7 @@ func Parse(args []string) (Configuration, error) {
 	timeout := 10
 	ttl := 1
 	proxied := true
+	cache := false
 
 	fs.Usage = func() {
 		_, _ = fmt.Fprintf(fs.Output(), "USAGE:\n\t%s -token xxx -domain example.com\n\nCONFIGURATION:\n", os.Args[0])
@@ -55,6 +57,7 @@ func Parse(args []string) (Configuration, error) {
 	fs.IntVar(&timeout, "timeout", 10, "API request timeout to CloudFlare and external IP service")
 	fs.IntVar(&ttl, "ttl", 1, "TTL for the domain record")
 	fs.BoolVar(&proxied, "proxied", true, "Is the request proxied through CloudFlare's servers")
+	fs.BoolVar(&cache, "cache", false, "Should the CloudFlare result be cached on disk")
 
 	if err := fs.Parse(args); err != nil {
 		return Configuration{}, fmt.Errorf("could not parse command parameters: %w", err)
@@ -92,7 +95,8 @@ func Parse(args []string) (Configuration, error) {
 
 	return Configuration{
 		App: App{
-			Interface: iface,
+			Interface:    iface,
+			CacheEnabled: cache,
 		},
 		CloudFlare: CloudFlare{
 			Domain:    domain,
