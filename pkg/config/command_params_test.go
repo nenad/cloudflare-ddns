@@ -44,6 +44,7 @@ func TestFromEnvironment(t *testing.T) {
 				"-proxied",
 				"-ttl", "300",
 				"-interface", "wlp3s0",
+				"-cache",
 			},
 			want: Configuration{
 				CloudFlare: CloudFlare{
@@ -56,7 +57,8 @@ func TestFromEnvironment(t *testing.T) {
 					IPVersion: ip.V6,
 				},
 				App: App{
-					Interface: "wlp3s0",
+					Interface:    "wlp3s0",
+					CacheEnabled: true,
 				},
 			},
 		},
