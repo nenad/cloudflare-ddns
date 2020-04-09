@@ -11,7 +11,17 @@ import (
 	"os"
 )
 
+var (
+	version = "v0.0.0-dev"
+	commit  = ""
+)
+
 func main() {
+	if len(os.Args) == 2 && (os.Args[1] == "-v" || os.Args[1] == "version") {
+		fmt.Printf("%s, commit %q\n", version, commit)
+		return
+	}
+
 	cfg, err := config.Parse(os.Args[1:])
 	if err != nil {
 		log.Fatalf("could not parse flags: %s", err)
