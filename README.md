@@ -6,6 +6,12 @@ A Go daemon for updating CloudFlare DNS automatically.
 
 Simply invoke the binary, for example `./cloudflare-ddns` and you will be provided with a list of all options.
 
+## How it works
+
+By default, the daemon will make an API call to https://api.ipify.org for getting your external IPv4 address, or https://api6.ipify.org for your IPv6 address, and based on the parameters provided will send an API request to CloudFlare to update your DNS entry.
+
+The parameter `-interface <name>` can be used if the IP you want the DNS entry to point to the unicast address of the interface instead of making an API call to ipify.org. That means, for IPv4 it will be (most likely) a private IP, and for IPv6 it will be a global unicast address.
+
 ## Building
 
 To build the binary, run `go build -o cloudflare-ddns cmd/cloudflare-ddns/main.go`
