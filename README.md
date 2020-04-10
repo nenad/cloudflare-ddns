@@ -29,12 +29,12 @@ Here is a table of required and non-required parameters:
 
 ## Periodic tasks
 
-_TODO_
-
-- Add systemd service file
+The service can be run as a cron task on every hour by simply modifying the crontab and adding:
+```
+0 */1 * * * /path/to/cloudflare-ddns -token <token here> -domain <domain here> > /dev/null
+```
 
 ## TODOs
 
 - Allow configuration of ipify domain name
 - Add developer environment
-- Add compiled builds
